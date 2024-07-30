@@ -1,10 +1,13 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { gsap } from "gsap";
+import Chapter from "../chapter/chapter";
 
 const Scene = () => {
+  const [chapterNumber, setChapterNumber] = useState<number>(0);
+
   const container = useRef<HTMLDivElement>(null);
   const scrollIndex = useRef(0);
   useEffect(() => {
@@ -58,6 +61,8 @@ const Scene = () => {
       0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffa500,
       0x800080, 0x008000, 0x000080,
     ];
+    const smallObjects: THREE.Mesh[] = [];
+
     points.forEach((point, index) => {
       const smallGeometry = new THREE.SphereGeometry(0.2, 32, 32);
       const smallMaterial = new THREE.MeshBasicMaterial({
@@ -65,8 +70,30 @@ const Scene = () => {
       });
       const smallObject = new THREE.Mesh(smallGeometry, smallMaterial);
       smallObject.position.copy(point);
+      smallObjects.push(smallObject);
       scene.add(smallObject);
     });
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    window.addEventListener("click", onMouseClick);
+
+    function onMouseClick(event: { clientX: number; clientY: number }) {
+      console.log(chapterNumber);
+      
+      if (chapterNumber) {
+        return;
+      }
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(smallObjects);
+      if (intersects.length > 0) {
+        const clickedObject = intersects[0].object as THREE.Mesh;
+        const clickedIndex = smallObjects.indexOf(clickedObject);
+        console.log(`Clicked object at index ${chapterNumber}`);
+        setChapterNumber(clickedIndex + 1);
+      }
+    }
     const animateCamera = (
       newPosition: THREE.Vector3,
       lookAtPosition: THREE.Vector3,
@@ -79,10 +106,8 @@ const Scene = () => {
         duration: duration / 1000,
         ease: "power1.inOut",
       });
-
-      // Add an additional animation for the y-axis movement
       gsap.to(camera.position, {
-        y: newPosition.y - 0.5, // Move the camera position by -1 in the y-axis
+        y: newPosition.y - 0.5,
         duration: duration / 1000,
         ease: "power1.inOut",
       });
@@ -103,19 +128,19 @@ const Scene = () => {
     };
 
     const onWheel = (event: { deltaY: number }) => {
+      if (chapterNumber) {
+        return;
+      }
       if (event.deltaY > 0) {
-        // Scroll down
         if (scrollIndex.current < points.length - 1) {
           scrollIndex.current = (scrollIndex.current + 1) % points.length;
         }
       } else {
-        // Scroll up
         if (scrollIndex.current > 0) {
           scrollIndex.current =
             (scrollIndex.current - 1 + points.length) % points.length;
         }
       }
-
       const currentPoint = points[scrollIndex.current];
       const nextPoint = points[(scrollIndex.current + 1) % points.length];
       const prevPoint =
@@ -126,9 +151,7 @@ const Scene = () => {
       const directionPrev = new THREE.Vector3()
         .subVectors(prevPoint, currentPoint)
         .normalize();
-
-      // Calculate an offset to raise the camera
-      const verticalOffset = 1; // Adjust as needed
+      const verticalOffset = 1;
       const cameraPosition = new THREE.Vector3()
         .copy(currentPoint)
         .sub(
@@ -136,7 +159,7 @@ const Scene = () => {
             ? directionNext.multiplyScalar(2)
             : directionPrev.multiplyScalar(2)
         )
-        .add(new THREE.Vector3(0, verticalOffset, 0)); // Add the offset
+        .add(new THREE.Vector3(0, verticalOffset, 0));
       animateCamera(cameraPosition, currentPoint, 5000);
     };
 
@@ -152,7 +175,16 @@ const Scene = () => {
     };
   }, []);
 
-  return <div ref={container} />;
+  return (
+    <div ref={container} className="wrapper">
+      {!!chapterNumber && (
+        <Chapter
+          chapternumber={chapterNumber}
+          setChapterNumber={setChapterNumber}
+        />
+      )}
+    </div>
+  );
 };
 
 export default Scene;
