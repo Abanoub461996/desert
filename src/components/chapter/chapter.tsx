@@ -9,13 +9,12 @@ const Chapter = ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setChapterNumber: any;
 }) => {
-  useEffect(()=>{
-    window.addEventListener("wheel",(e)=>{
-      e.stopPropagation()
-    })
-  },[])
+  function handlePopupScroll(event: { stopPropagation: () => void; }) {
+    event.stopPropagation(); // Prevent the event from reaching the scene
+    // Your popup scroll logic here
+  }
   return (
-    <ChapterWrapper>
+    <ChapterWrapper onScroll={handlePopupScroll} onWheel={handlePopupScroll} onClick={handlePopupScroll}>
       <div className="content">
         <div className="scrollable"></div>
         <button onClick={() => setChapterNumber(0)}>
