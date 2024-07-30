@@ -64,10 +64,8 @@ const Scene = () => {
         scene.add(model);
       },
       () => {},
-      (error) => {}
+      () => {}
     );
-
-    const path = new THREE.CatmullRomCurve3(points);
     const colors = [
       0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffa500,
       0x800080, 0x008000, 0x000080,
@@ -83,7 +81,7 @@ const Scene = () => {
     });
 
     // Function to animate camera movement and lookAt
-    const animateCamera = (newPosition, lookAtPosition, duration) => {
+    const animateCamera = (newPosition: THREE.Vector3, lookAtPosition: THREE.Vector3, duration: number) => {
       gsap.to(camera.position, {
         x: newPosition.x,
         y: newPosition.y,
@@ -108,7 +106,7 @@ const Scene = () => {
     };
 
     // Handle mouse wheel event
-    const onWheel = (event) => {
+    const onWheel = (event: { deltaY: number; }) => {
       if (event.deltaY > 0) {
         scrollIndex.current = Math.min(
           scrollIndex.current + 1,
