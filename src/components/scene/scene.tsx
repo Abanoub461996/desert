@@ -137,17 +137,6 @@ const Scene = () => {
             : directionPrev.multiplyScalar(2)
         )
         .add(new THREE.Vector3(0, verticalOffset, 0)); // Add the offset
-
-      // Determine the lookAt position
-      let lookAtPosition;
-      if (scrollIndex.current === points.length - 1) {
-        // For the last point, look at the center (0, 1, 0)
-        lookAtPosition = new THREE.Vector3(0, 1, 0);
-      } else {
-        // For other points, look at the next point (scrolling down) or previous point (scrolling up)
-        lookAtPosition = event.deltaY > 0 ? nextPoint : prevPoint;
-      }
-
       animateCamera(cameraPosition, currentPoint, 5000);
     };
 
