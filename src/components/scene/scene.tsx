@@ -7,35 +7,29 @@ import { gsap } from "gsap";
 const Scene = () => {
   const container = useRef<HTMLDivElement>(null);
   const scrollIndex = useRef(0);
-
   useEffect(() => {
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x87ceeb); // Sky blue background
-
+    scene.background = new THREE.Color(0x87ceeb);
     const camera = new THREE.PerspectiveCamera(
       45,
       window.innerWidth / window.innerHeight,
       1,
       1000
     );
-
-    // Set the initial camera position to the first point
     const points = [
-      [-20, 0.5, 0],
-      [-10, 1, 2],
+      [-20, 0.5, 2],
+      [-6, 0.5, -10],
       [-5, 1, 0],
       [0, 1, 5],
       [5, 2, 0],
       [8, 2, 5],
       [10, 0.5, 20],
       [15, 0.5, 5],
-      [18, 0.5, 0],
-      [20, 0.5, 5],
+      [18, 0.5, 5],
+      [20, 0.5, -5],
     ].map((p) => new THREE.Vector3(...p));
-
     camera.position.copy(points[0]);
     camera.lookAt(points[1]);
-
     camera.up.set(0, 1, 0);
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
@@ -45,7 +39,6 @@ const Scene = () => {
     directionalLight.position.set(50, 50, 50);
     directionalLight.castShadow = true;
     scene.add(directionalLight);
-
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -57,21 +50,16 @@ const Scene = () => {
       scene.background = texture;
     });
     const loader = new GLTFLoader();
-    loader.load(
-      "/sand_rock_pack_02.glb",
-      (gltf) => {
-        const model = gltf.scene;
-        scene.add(model);
-      },
-      () => {},
-      () => {}
-    );
+    loader.load("/sand_rock_pack_02.glb", (gltf) => {
+      const model = gltf.scene;
+      scene.add(model);
+    });
     const colors = [
       0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffa500,
       0x800080, 0x008000, 0x000080,
     ];
     points.forEach((point, index) => {
-      const smallGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+      const smallGeometry = new THREE.SphereGeometry(0.2, 32, 32);
       const smallMaterial = new THREE.MeshBasicMaterial({
         color: colors[index % colors.length],
       });
@@ -79,15 +67,24 @@ const Scene = () => {
       smallObject.position.copy(point);
       scene.add(smallObject);
     });
-
-    // Function to animate camera movement and lookAt
-    const animateCamera = (newPosition: THREE.Vector3, lookAtPosition: THREE.Vector3, duration: number) => {
+    const animateCamera = (
+      newPosition: THREE.Vector3,
+      lookAtPosition: THREE.Vector3,
+      duration: number
+    ) => {
       gsap.to(camera.position, {
         x: newPosition.x,
         y: newPosition.y,
         z: newPosition.z,
         duration: duration / 1000,
-        ease: "power2.inOut",
+        ease: "power1.inOut",
+      });
+
+      // Add an additional animation for the y-axis movement
+      gsap.to(camera.position, {
+        y: newPosition.y - 0.5, // Move the camera position by -1 in the y-axis
+        duration: duration / 1000,
+        ease: "power1.inOut",
       });
 
       gsap.to(camera, {
@@ -101,39 +98,60 @@ const Scene = () => {
           );
         },
         duration: duration / 1000,
-        ease: "power2.inOut",
+        ease: "power1.inOut",
       });
     };
 
-    // Handle mouse wheel event
-    const onWheel = (event: { deltaY: number; }) => {
+    const onWheel = (event: { deltaY: number }) => {
       if (event.deltaY > 0) {
-        scrollIndex.current = Math.min(
-          scrollIndex.current + 1,
-          points.length - 1
-        );
+        // Scroll down
+        if (scrollIndex.current < points.length - 1) {
+          scrollIndex.current = (scrollIndex.current + 1) % points.length;
+        }
       } else {
-        scrollIndex.current = Math.max(scrollIndex.current - 1, 0);
+        // Scroll up
+        if (scrollIndex.current > 0) {
+          scrollIndex.current =
+            (scrollIndex.current - 1 + points.length) % points.length;
+        }
       }
 
       const currentPoint = points[scrollIndex.current];
-      const nextPoint =
-        points[Math.min(scrollIndex.current + 1, points.length - 1)];
-
-      // Calculate the direction vector from the current point to the next point
-      const direction = new THREE.Vector3()
+      const nextPoint = points[(scrollIndex.current + 1) % points.length];
+      const prevPoint =
+        points[(scrollIndex.current - 1 + points.length) % points.length];
+      const directionNext = new THREE.Vector3()
         .subVectors(nextPoint, currentPoint)
         .normalize();
+      const directionPrev = new THREE.Vector3()
+        .subVectors(prevPoint, currentPoint)
+        .normalize();
 
-      // Move the camera to a position slightly before the current point in the opposite direction of the next point
+      // Calculate an offset to raise the camera
+      const verticalOffset = 1; // Adjust as needed
       const cameraPosition = new THREE.Vector3()
         .copy(currentPoint)
-        .sub(direction.multiplyScalar(2));
-      animateCamera(cameraPosition, currentPoint, 1000); // Adjust the duration as needed
+        .sub(
+          event.deltaY > 0
+            ? directionNext.multiplyScalar(2)
+            : directionPrev.multiplyScalar(2)
+        )
+        .add(new THREE.Vector3(0, verticalOffset, 0)); // Add the offset
+
+      // Determine the lookAt position
+      let lookAtPosition;
+      if (scrollIndex.current === points.length - 1) {
+        // For the last point, look at the center (0, 1, 0)
+        lookAtPosition = new THREE.Vector3(0, 1, 0);
+      } else {
+        // For other points, look at the next point (scrolling down) or previous point (scrolling up)
+        lookAtPosition = event.deltaY > 0 ? nextPoint : prevPoint;
+      }
+
+      animateCamera(cameraPosition, currentPoint, 5000);
     };
 
     window.addEventListener("wheel", onWheel);
-
     const animate = () => {
       requestAnimationFrame(animate);
       renderer.render(scene, camera);
