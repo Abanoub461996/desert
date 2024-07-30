@@ -3,21 +3,142 @@ import styled from "styled-components";
 export const ChapterWrapper = styled.div`
   width: 100%;
   height: 100vh;
-  position: absolute;
+  position: fixed;
   top: 0;
-  right: 0;
+  left: 0%;
   color: wheat;
   overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden;
   .content {
-    height: 90vh;
+    position: relative;
+    height: 100vh;
     width: 100%;
     overflow-y: auto;
-    background-color: #3d3fbb16;
+    background-color: #000000;
+    animation: slide-in 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
     .scrollable {
-      height: 200vh;
+      width: 90%;
+      margin: 0 auto;
+      padding: 1em 0;
+    }
+    .close_chapter__btn {
+      position: absolute;
+      right: 2em;
+      top: 2em;
+      color: red;
+      padding: 0.5em;
+      cursor: pointer;
+    }
+  }
+
+  @keyframes slide-in {
+    0% {
+      transform: translateZ(800px);
+      border-radius: 24% 76% 35% 65% / 31% 49% 51% 69%;
+      width: 50%;
+      height: 300px;
+      margin: auto;
+      overflow: hidden;
+      opacity: 0;
+    }
+
+    10% {
+      transform: translateZ(800px);
+      border-radius: 34% 66% 8% 92% / 72% 28% 72% 28%;
+      width: 50%;
+      height: 400px;
+      margin: auto;
+      overflow: hidden;
+      opacity: 0.1;
+    }
+
+    20% {
+      transform: translateZ(800px);
+      border-radius: 34% 66% 83% 17% / 72% 32% 68% 28%;
+      width: 55%;
+      height: 420px;
+      margin: auto;
+      overflow: hidden;
+      opacity: 0.2;
+    }
+
+    30% {
+      transform: translateZ(800px);
+      border-radius: 79% 21% 42% 58% / 40% 32% 68% 60%;
+      width: 60%;
+      height: 440px;
+      margin: auto;
+      overflow: hidden;
+      opacity: 0.3;
+    }
+
+    40% {
+      transform: translateZ(800px);
+      border-radius: 44% 56% 51% 49% / 40% 86% 14% 60%;
+      width: 65%;
+      height: 460px;
+      margin: auto;
+      overflow: hidden;
+      opacity: 0.4;
+    }
+
+    50% {
+      transform: translateZ(400px);
+      border-radius: 78% 22% 100% 0% / 80% 52% 48% 20%;
+      margin: auto;
+      width: 70%;
+      height: 480px;
+      overflow: hidden;
+      opacity: 0.5;
+    }
+
+    60% {
+      transform: translateZ(400px);
+      border-radius: 78% 22% 100% 0% / 32% 52% 48% 68%;
+      margin: auto;
+      width: 75%;
+      height: 500px;
+      overflow: hidden;
+      opacity: 0.6;
+    }
+
+    70% {
+      transform: translateZ(400px);
+      border-radius: 56% 44% 100% 0% / 29% 78% 22% 71%;
+      margin: auto;
+      width: 80%;
+      height: 520px;
+      overflow: hidden;
+      opacity: 0.65;
+    }
+
+    80% {
+      transform: translateZ(400px);
+      border-radius: 79% 21% 100% 0% / 29% 95% 5% 71%;
+      margin: auto;
+      width: 85%;
+      height: 540px;
+      overflow: hidden;
+      opacity: 0.7;
+    }
+
+    90% {
+      transform: translateZ(400px);
+      border-radius: 79% 21% 100% 0% / 4% 85% 15% 96%;
+      margin: auto;
+      width: 90%;
+      height: 560px;
+      overflow: hidden;
+      opacity: 0.75;
+    }
+
+    100% {
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+      opacity: 0.8;
     }
   }
 `;
