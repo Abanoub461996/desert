@@ -10,14 +10,17 @@ export const ChapterWrapper = styled.div`
   right: 50%;
   transform: translate(50%, -50%);
   color: wheat;
-  overflow: auto;
+  overflow: hidden;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding: 2em;
-  .content{
-    height: 200vh;
+  align-items: center;
+  .content {
+    height: 90vh;
     width: 100%;
-
+    overflow-y: auto;
+    background-color: #3d3fbb16;
+    .scrollable {
+      height: 200vh;
+    }
   }
 `;

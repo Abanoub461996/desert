@@ -43,7 +43,7 @@ const Scene = () => {
     directionalLight.castShadow = true;
     scene.add(directionalLight);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setPixelRatio(window.innerWidth/ window.innerHeight);
     renderer.setSize(window.innerWidth, window.innerHeight);
     container.current?.appendChild(renderer.domElement);
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -73,24 +73,29 @@ const Scene = () => {
       smallObjects.push(smallObject);
       scene.add(smallObject);
     });
+
+    // Raycasting setup
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
+
+    // Listen for mouse clicks
     window.addEventListener("click", onMouseClick);
 
     function onMouseClick(event: { clientX: number; clientY: number }) {
-      console.log(chapterNumber);
-      
-      if (chapterNumber) {
-        return;
-      }
+      container.current?.classList.add('no-scroll');
+      // Calculate normalized device coordinates (NDC) from mouse position
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+      // Update the picking ray with the camera and mouse position
       raycaster.setFromCamera(mouse, camera);
+
+      // Find intersected objects
       const intersects = raycaster.intersectObjects(smallObjects);
       if (intersects.length > 0) {
         const clickedObject = intersects[0].object as THREE.Mesh;
         const clickedIndex = smallObjects.indexOf(clickedObject);
-        console.log(`Clicked object at index ${chapterNumber}`);
+        console.log(`Clicked object at index ${clickedIndex}`);
         setChapterNumber(clickedIndex + 1);
       }
     }
@@ -106,8 +111,10 @@ const Scene = () => {
         duration: duration / 1000,
         ease: "power1.inOut",
       });
+
+      // Add an additional animation for the y-axis movement
       gsap.to(camera.position, {
-        y: newPosition.y - 0.5,
+        y: newPosition.y - 0.5, // Move the camera position by -1 in the y-axis
         duration: duration / 1000,
         ease: "power1.inOut",
       });
@@ -128,19 +135,22 @@ const Scene = () => {
     };
 
     const onWheel = (event: { deltaY: number }) => {
-      if (chapterNumber) {
-        return;
-      }
+      console.log(chapterNumber);
+      if (chapterNumber != 0) return;
+
       if (event.deltaY > 0) {
+        // Scroll down
         if (scrollIndex.current < points.length - 1) {
           scrollIndex.current = (scrollIndex.current + 1) % points.length;
         }
       } else {
+        // Scroll up
         if (scrollIndex.current > 0) {
           scrollIndex.current =
             (scrollIndex.current - 1 + points.length) % points.length;
         }
       }
+
       const currentPoint = points[scrollIndex.current];
       const nextPoint = points[(scrollIndex.current + 1) % points.length];
       const prevPoint =
@@ -151,7 +161,9 @@ const Scene = () => {
       const directionPrev = new THREE.Vector3()
         .subVectors(prevPoint, currentPoint)
         .normalize();
-      const verticalOffset = 1;
+
+      // Calculate an offset to raise the camera
+      const verticalOffset = 1; // Adjust as needed
       const cameraPosition = new THREE.Vector3()
         .copy(currentPoint)
         .sub(
@@ -159,11 +171,11 @@ const Scene = () => {
             ? directionNext.multiplyScalar(2)
             : directionPrev.multiplyScalar(2)
         )
-        .add(new THREE.Vector3(0, verticalOffset, 0));
+        .add(new THREE.Vector3(0, verticalOffset, 0)); // Add the offset
       animateCamera(cameraPosition, currentPoint, 5000);
     };
 
-    window.addEventListener("wheel", onWheel);
+     window.addEventListener("wheel", onWheel);
     const animate = () => {
       requestAnimationFrame(animate);
       renderer.render(scene, camera);
@@ -176,7 +188,8 @@ const Scene = () => {
   }, []);
 
   return (
-    <div ref={container} className="wrapper">
+    <div className="wrapper">
+      <div ref={container} />
       {!!chapterNumber && (
         <Chapter
           chapternumber={chapterNumber}

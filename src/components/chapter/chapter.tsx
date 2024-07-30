@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { ChapterWrapper } from "./chapter.style";
 
 const Chapter = ({
@@ -8,15 +9,19 @@ const Chapter = ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setChapterNumber: any;
 }) => {
-  const handleCloseModal = (e) => {
-    e.preventDefault();
-    e.stopPropagation(); // Prevent the event from reaching the scene
-    setChapterNumber(0);
-  };
+  useEffect(()=>{
+    window.addEventListener("wheel",(e)=>{
+      e.stopPropagation()
+    })
+  },[])
   return (
-    <ChapterWrapper onClick={(e)=>{e.preventDefault()}}>
-      <button onClick={(e) => handleCloseModal(e)}>close {chapternumber}</button>
-      <div className="content"></div>
+    <ChapterWrapper>
+      <div className="content">
+        <div className="scrollable"></div>
+        <button onClick={() => setChapterNumber(0)}>
+          close {chapternumber}
+        </button>
+      </div>
     </ChapterWrapper>
   );
 };
