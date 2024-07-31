@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { FontLoader } from "three/addons/loaders/FontLoader.js";
-import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 
 import { gsap } from "gsap";
 import Chapter from "../chapter/chapter";
@@ -64,55 +62,19 @@ const Scene = () => {
       0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffa500,
       0x800080, 0x008000, 0x000080,
     ];
-    // Arabic numerals
-    const arabicNumbers = [
-      "١",
-      "٢",
-      "٣",
-      "٤",
-      "٥",
-      "٦",
-      "٧",
-      "٨",
-      "٩",
-      "١٠",
-      "١١",
-    ];
+
     const smallObjects: THREE.Mesh[] = [];
-    // Load the font and create 3D numbers
-    const fontLoader = new FontLoader();
-    fontLoader.load("fonts/arabswell_1_Regular.json", (font) => {
-      points.forEach((point, index) => {
-        const textGeometry = new TextGeometry(arabicNumbers[index].toString(), {
-          font: font,
-          size: 0.5,
-          depth: 0.02,
-          curveSegments: 12,
-          bevelEnabled: true,
-          bevelThickness: 0.01,
-          bevelSize: 0.01,
-          bevelOffset: 0,
-          bevelSegments: 5,
-        });
-        const textMaterial = new THREE.MeshBasicMaterial({
-          color: colors[index % colors.length],
-        });
-        const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-        textMesh.position.copy(point);
-        smallObjects.push(textMesh);
-        scene.add(textMesh);
+
+    points.forEach((point, index) => {
+      const smallGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+      const smallMaterial = new THREE.MeshBasicMaterial({
+        color: colors[index % colors.length],
       });
+      const smallObject = new THREE.Mesh(smallGeometry, smallMaterial);
+      smallObject.position.copy(point);
+      smallObjects.push(smallObject);
+      scene.add(smallObject);
     });
-    // points.forEach((point, index) => {
-    //   const smallGeometry = new THREE.SphereGeometry(0.1, 32, 32);
-    //   const smallMaterial = new THREE.MeshBasicMaterial({
-    //     color: colors[index % colors.length],
-    //   });
-    //   const smallObject = new THREE.Mesh(smallGeometry, smallMaterial);
-    //   smallObject.position.copy(point);
-    //   smallObjects.push(smallObject);
-    //   scene.add(smallObject);
-    // });
 
     // Raycasting setup
     const raycaster = new THREE.Raycaster();

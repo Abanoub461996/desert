@@ -19,10 +19,60 @@ export const ChapterWrapper = styled.div`
     overflow-y: auto;
     background-color: #000000;
     animation: slide-in 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     .scrollable {
-      width: 90%;
-      margin: 0 auto;
-      padding: 1em 0;
+      .album-web {
+        text-align: center;
+      }
+
+      .page {
+        box-shadow: 0 1.5em 3em -1em rgb(70, 69, 69);
+        background-color: rgb(251, 225, 139);
+        width: 50%;
+        color: black;
+      }
+
+      .cover {
+        background-color: rgb(251, 225, 139);
+        box-shadow: 0 1.5em 3em -1em rgb(70, 69, 69);
+      }
+
+      .btn,
+      .form-control {
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        color: inherit;
+        appearance: none;
+        font-size: 1em;
+        line-height: 1.2;
+        border-width: 2px;
+        border-style: solid;
+      }
+      .btn {
+        background-color: aquamarine;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0 1.2em;
+        border-color: transparent;
+      }
+      .form-control {
+        padding: 0 0.5em;
+      }
+
+      input {
+        text-align: center;
+      }
+
+      .formContainer {
+        align-items: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
     }
     .close_chapter__btn {
       position: absolute;
@@ -31,6 +81,7 @@ export const ChapterWrapper = styled.div`
       color: red;
       padding: 0.5em;
       cursor: pointer;
+      z-index: 999999;
     }
   }
 

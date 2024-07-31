@@ -1,9 +1,11 @@
-import { useRef } from "react";
+import { forwardRef, useEffect, useRef } from "react";
 import { ChapterWrapper } from "./chapter.style";
 import { IoMdClose } from "react-icons/io";
 import { chapters } from "./chapters";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
+import HTMLFlipBook from "react-pageflip";
+import React from "react";
 
 const Chapter = ({
   chapterNumber,
@@ -13,51 +15,43 @@ const Chapter = ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setChapterNumber: any;
 }) => {
+  const windowWidth = useRef(window.innerWidth);
+  const windowHeight = useRef(window.innerHeight);
   const contentRef = useRef<HTMLDivElement>(null);
   gsap.registerPlugin(useGSAP);
+  function handlePopupScroll(event: { stopPropagation: () => void }) {
+    event.stopPropagation();
+  }
+  useEffect(() => {
+    function handleWindowResize() {
+      windowWidth.current = window.innerWidth;
+      windowHeight.current = window.innerHeight;
+    }
+
+    window.addEventListener("resize", handleWindowResize);
+
+    return () => {
+      window.removeEventListener("resize", handleWindowResize);
+    };
+
+  }, []);
   useGSAP(
     () => {
       if (contentRef.current) {
         const tl = gsap.timeline({ duration: 1 });
         tl.from(
-          contentRef.current.querySelector(".content__label"),
+          contentRef.current.querySelector(".scrollable"),
           {
             opacity: 0,
-            x: -200,
-            ease: "power2.out",
+            y: -200,
+            ease: "power2.inOut",
           },
           3
         )
-          .from(
-            contentRef.current.querySelector(".content__title"),
-            {
-              opacity: 0,
-
-              x: -200,
-              ease: "power2.out",
-            },
-            "-=0.3"
-          )
-          .from(
-            contentRef.current.querySelector(".content__text"),
-            {
-              opacity: 0,
-
-              x: -200,
-              ease: "power2.out",
-            },
-            "-=0.3"
-          );
       }
     },
     { scope: contentRef }
   );
-
-  function handlePopupScroll(event: { stopPropagation: () => void }) {
-    event.stopPropagation(); // Prevent the event from reaching the scene
-    // Your popup scroll logic here
-  }
-
   return (
     <ChapterWrapper
       onScroll={handlePopupScroll}
@@ -69,20 +63,57 @@ const Chapter = ({
           className="close_chapter__btn"
           onClick={() => setChapterNumber(0)}
         />
-        <div className="scrollable">
-          <h3 className="content__label">
-            {chapters[chapterNumber - 1].label}
-          </h3>
-          <h1 className="content__title">
-            {chapters[chapterNumber - 1].title}
-          </h1>
-          <div className="content__text">
-            {chapters[chapterNumber - 1].content}
-          </div>
+        <div className="scrollable" style={{ flex: 1 }}>
+          <HTMLFlipBook
+            width={(windowWidth.current * 0.9) / 2}
+            height={windowHeight.current * 0.9}
+            flippingTime={1500}
+            style={{ margin: "0 auto", width: "100%" }}
+            maxShadowOpacity={0.5}
+            className="album-web"
+            startPage={0}
+            size="fixed"
+            drawShadow={false}
+            usePortrait={false}
+            minWidth={300}
+            maxWidth={1080}
+            minHeight={400}
+            maxHeight={1920}
+            startZIndex={1} 
+            autoSize={true}
+            showCover={false}
+            mobileScrollSupport={true}
+          >
+            <Page number="1">
+              <hr></hr>
+            </Page>
+            <Page number="2">
+              <hr></hr>
+              <p>ssssss</p>
+            </Page>
+            <Page number="3">
+              <hr></hr>
+            </Page>
+            <Page number="4">
+              <hr></hr>
+            </Page>
+          </HTMLFlipBook>
         </div>
       </div>
     </ChapterWrapper>
   );
 };
-
+interface PageProps {
+  number?: string;
+  children?: React.ReactNode;
+}
+const Page = forwardRef<HTMLDivElement, PageProps>((props, ref) => {
+  return (
+    <div className="page" ref={ref}>
+      <h1>Page Header</h1>
+      <p>{props.children}</p>
+      <p>{props.number}</p>
+    </div>
+  );
+});
 export default Chapter;

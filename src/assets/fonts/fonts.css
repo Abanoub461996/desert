@@ -1,0 +1,10 @@
+@font-face {
+	font-family: 'ArabsWell';
+	font-weight: 300;
+	src: local('ArabsWell'), url('/arabswell-1.ttf');
+}
+@font-face {
+	font-family: 'mrt-nil';
+	font-weight: 300;
+	src: local('mrt-nil'), url('/mrt-nil-3.ttf');
+}
