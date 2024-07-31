@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { FontLoader } from "three/addons/loaders/FontLoader.js";
+import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
+
 import { gsap } from "gsap";
 import Chapter from "../chapter/chapter";
 
@@ -31,7 +34,7 @@ const Scene = () => {
       [18, 0.5, 5],
       [20, 0.5, -5],
     ].map((p) => new THREE.Vector3(...p));
-    camera.position.copy(points[0]);
+    camera.position.set(-21, 0.5, 2);
     camera.lookAt(points[1]);
     camera.up.set(0, 1, 0);
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -43,7 +46,7 @@ const Scene = () => {
     directionalLight.castShadow = true;
     scene.add(directionalLight);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(window.innerWidth/ window.innerHeight);
+    renderer.setPixelRatio(window.innerWidth / window.innerHeight);
     renderer.setSize(window.innerWidth, window.innerHeight);
     container.current?.appendChild(renderer.domElement);
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -61,18 +64,55 @@ const Scene = () => {
       0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffa500,
       0x800080, 0x008000, 0x000080,
     ];
+    // Arabic numerals
+    const arabicNumbers = [
+      "١",
+      "٢",
+      "٣",
+      "٤",
+      "٥",
+      "٦",
+      "٧",
+      "٨",
+      "٩",
+      "١٠",
+      "١١",
+    ];
     const smallObjects: THREE.Mesh[] = [];
-
-    points.forEach((point, index) => {
-      const smallGeometry = new THREE.SphereGeometry(0.2, 32, 32);
-      const smallMaterial = new THREE.MeshBasicMaterial({
-        color: colors[index % colors.length],
+    // Load the font and create 3D numbers
+    const fontLoader = new FontLoader();
+    fontLoader.load("fonts/arabswell_1_Regular.json", (font) => {
+      points.forEach((point, index) => {
+        const textGeometry = new TextGeometry(arabicNumbers[index].toString(), {
+          font: font,
+          size: 0.5,
+          depth: 0.02,
+          curveSegments: 12,
+          bevelEnabled: true,
+          bevelThickness: 0.01,
+          bevelSize: 0.01,
+          bevelOffset: 0,
+          bevelSegments: 5,
+        });
+        const textMaterial = new THREE.MeshBasicMaterial({
+          color: colors[index % colors.length],
+        });
+        const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+        textMesh.position.copy(point);
+        smallObjects.push(textMesh);
+        scene.add(textMesh);
       });
-      const smallObject = new THREE.Mesh(smallGeometry, smallMaterial);
-      smallObject.position.copy(point);
-      smallObjects.push(smallObject);
-      scene.add(smallObject);
     });
+    // points.forEach((point, index) => {
+    //   const smallGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+    //   const smallMaterial = new THREE.MeshBasicMaterial({
+    //     color: colors[index % colors.length],
+    //   });
+    //   const smallObject = new THREE.Mesh(smallGeometry, smallMaterial);
+    //   smallObject.position.copy(point);
+    //   smallObjects.push(smallObject);
+    //   scene.add(smallObject);
+    // });
 
     // Raycasting setup
     const raycaster = new THREE.Raycaster();
@@ -82,7 +122,7 @@ const Scene = () => {
     window.addEventListener("click", onMouseClick);
 
     function onMouseClick(event: { clientX: number; clientY: number }) {
-      container.current?.classList.add('no-scroll');
+      container.current?.classList.add("no-scroll");
       // Calculate normalized device coordinates (NDC) from mouse position
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -95,7 +135,6 @@ const Scene = () => {
       if (intersects.length > 0) {
         const clickedObject = intersects[0].object as THREE.Mesh;
         const clickedIndex = smallObjects.indexOf(clickedObject);
-        console.log(`Clicked object at index ${clickedIndex}`);
         setChapterNumber(clickedIndex + 1);
       }
     }
@@ -161,8 +200,6 @@ const Scene = () => {
       const directionPrev = new THREE.Vector3()
         .subVectors(prevPoint, currentPoint)
         .normalize();
-
-      // Calculate an offset to raise the camera
       const verticalOffset = 1; // Adjust as needed
       const cameraPosition = new THREE.Vector3()
         .copy(currentPoint)
@@ -175,7 +212,7 @@ const Scene = () => {
       animateCamera(cameraPosition, currentPoint, 5000);
     };
 
-     window.addEventListener("wheel", onWheel);
+    window.addEventListener("wheel", onWheel);
     const animate = () => {
       requestAnimationFrame(animate);
       renderer.render(scene, camera);
@@ -192,7 +229,7 @@ const Scene = () => {
       <div ref={container} />
       {!!chapterNumber && (
         <Chapter
-          chapternumber={chapterNumber}
+          chapterNumber={chapterNumber}
           setChapterNumber={setChapterNumber}
         />
       )}
